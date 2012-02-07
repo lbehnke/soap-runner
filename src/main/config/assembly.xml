@@ -1,0 +1,21 @@
+<assembly>
+  <id>all</id>
+  <formats>
+    <format>zip</format>
+  </formats>
+  <baseDirectory></baseDirectory>
+  <fileSets>
+    <fileSet>
+      <directory>target</directory>
+      <outputDirectory></outputDirectory>
+      <includes>
+        <include>soaprunner-all*.jar</include>
+      </includes>
+    </fileSet>
+    <fileSet>
+      <includes>
+        <include>readme*</include>
+      </includes>
+    </fileSet>
+  </fileSets>
+</assembly>
