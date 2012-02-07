@@ -37,18 +37,18 @@ public class SoapDocumentFormatter implements DocumentFormatter
 {
     private boolean verbose;
     private boolean excludeHttpHeader;
-    
+
     public SoapDocumentFormatter()
     {
         this(false, false);
     }
-    
+
     public SoapDocumentFormatter(boolean excludeHttpHeader, boolean verbose)
     {
         this.excludeHttpHeader = excludeHttpHeader;
         this.verbose = verbose;
     }
-        
+
     @Override
     public void format(List<String> lines, PrintWriter writer)
     {
@@ -75,7 +75,6 @@ public class SoapDocumentFormatter implements DocumentFormatter
 
     private void processHeaderLines(PrintWriter writer, List<String> localLines)
     {
-        
         List<String> headerLines = new ArrayList<String>();
         while (localLines.size() > 0)
         {
@@ -138,7 +137,6 @@ public class SoapDocumentFormatter implements DocumentFormatter
         }
         catch (Exception e)
         {
-            
             throw new RuntimeException(e);
         }
     }
@@ -156,11 +154,11 @@ public class SoapDocumentFormatter implements DocumentFormatter
         {
             if (verbose)
             {
-                System.out.println("Parsing XML failed:\n" + str + "\n" + e);
+                Log.err("Parsing XML failed:\n" + str + "\n" + e);
             }
             return null;
         }
-        
+
     }
 
 }

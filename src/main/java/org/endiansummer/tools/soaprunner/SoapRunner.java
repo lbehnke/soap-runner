@@ -63,7 +63,7 @@ public class SoapRunner
     {
         if (verbose)
         {
-            System.out.println("Processing file " + inputFile.getAbsolutePath());
+            Log.line("Processing file " + inputFile.getAbsolutePath());
         }
         FileReader fr = null;
         try
@@ -94,6 +94,12 @@ public class SoapRunner
         boolean inResponse = false;
         int count = 0;
         String requestId = null;
+   
+        if (!verbose)
+        {
+            Log.append("Please wait");
+        }
+        
         while ((line = bis.readLine()) != null)
         {
             if (line.endsWith(REQUEST_MARKER)){
@@ -146,6 +152,11 @@ public class SoapRunner
                 appendLine(line, headerBuffer, contentBuffer, inHeader);
             }
         }
+        
+        if (!verbose)
+        {
+            Log.line("\nDone");
+        }
     }
 
     private List<String> createLines(StringBuffer headerBuffer, StringBuffer contentBuffer) throws IOException
@@ -177,7 +188,6 @@ public class SoapRunner
         else
         {
             String id = line.replaceAll("[\\W]+", "");
-            
             return String.format("%03d-%s", new Integer(count), id);
         }
         
@@ -204,18 +214,15 @@ public class SoapRunner
 
     private void appendLine(String line, StringBuffer headerBuffer, StringBuffer contentBuffer, boolean inHeader)
     {
-        if (inHeader)
-        {
-            headerBuffer.append(line);
-            headerBuffer.append("\n");
-        }
-        else
-        {
-            contentBuffer.append(line);
-            contentBuffer.append("\n");
-        }
+        StringBuffer sb = inHeader ? headerBuffer : contentBuffer;
+        sb.append(line);
+        sb.append("\n");
     }
 
+    /*
+     * Due to a bug in TCPMon the end marker is appended to the last line of the previous section.
+     * This must be sorted out...
+     */
     private void documentStarts(String line, StringBuffer headerBuffer, StringBuffer contentBuffer, boolean inHeader, String startMarker)
     {
         int endIdx = line.length() - startMarker.length();
@@ -231,21 +238,53 @@ public class SoapRunner
     {
         if (verbose)
         {
-            System.out.println("Sending server request " + requestId);
+            Log.line("Sending server request " + requestId);
         }
+
         int contentLength = contentBuffer.toString().getBytes("UTF-8").length;
         headerBuffer.append("Content-Length: " + contentLength + "\n");
         String document = headerBuffer.toString() + "\n" + contentBuffer.toString();
         Socket socket = new Socket(host, port);
-        OutputStream out = socket.getOutputStream();
-        InputStream in = socket.getInputStream();
-
-        IOUtils.write(document, out, "UTF-8");
-        @SuppressWarnings("unchecked")
-        List<String> responseLines = IOUtils.readLines(in, "UTF-8");
-        
-        writeResponseFile(requestId, responseLines, currentOutput);
+        try
+        {
+            OutputStream out = socket.getOutputStream();
+            InputStream in = socket.getInputStream();
+            IOUtils.write(document, out, "UTF-8");
+            @SuppressWarnings("unchecked")
+            List<String> responseLines = IOUtils.readLines(in, "UTF-8");
+            
+            String status = responseLines.size() > 0 ? responseLines.get(0) : null;
+            logStatus(status);
+            writeResponseFile(requestId, responseLines, currentOutput);
+        }
+        finally 
+        {
+            socket.close();
+        }
    }
+
+    private void logStatus(String status)
+    {
+        if (status != null)
+        {
+            if (verbose)
+            {
+                Log.line(status);
+            }
+            else
+            {
+                boolean ok = status.startsWith("HTTP/1.1 2");
+                if (ok)
+                {
+                    Log.append(".");
+                }
+                else
+                {
+                    Log.append("!");
+                }
+            }
+        }
+    }
 
     private void writeResponseFile(String requestId, List<String> responseLines, File folder) throws FileNotFoundException
     {
@@ -253,7 +292,7 @@ public class SoapRunner
         {
             if (verbose)
             {
-                System.out.println("Writing response " + requestId + " to " + folder);
+                Log.line("Writing response " + requestId + " to " + folder);
             }
             File docFile = new File(folder, requestId + ".txt");
             PrintWriter writer = new PrintWriter(docFile);

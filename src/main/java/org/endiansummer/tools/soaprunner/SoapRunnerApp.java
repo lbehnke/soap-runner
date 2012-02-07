@@ -32,10 +32,10 @@ public class SoapRunnerApp
 
     public static void main(String[] args) 
     {
-        System.out.println("SOAP Runner Copyright (C) 2012 Lars Behnke");
-        System.out.println("This program comes with ABSOLUTELY NO WARRANTY.");
-        System.out.println("This is free software, and you are welcome to redistribute it.");
-        System.out.println("under certain conditions. See license.txt for details.");
+        Log.line("SOAP Runner Copyright (C) 2012 Lars Behnke");
+        Log.line("This program comes with ABSOLUTELY NO WARRANTY.");
+        Log.line("This is free software, and you are welcome to redistribute it.");
+        Log.line("under certain conditions. See license.txt for details.");
         
         /* Parsing arguments */
         Options options = buildOptions();
@@ -78,7 +78,7 @@ public class SoapRunnerApp
         }
         catch (Exception e)
         {
-            System.out.println("Parsing command line failed: " + e);
+            Log.line("Parsing command line failed: " + e);
             printHelp(options);
             System.exit(1);
         }
@@ -90,14 +90,19 @@ public class SoapRunnerApp
         }
         catch (FileNotFoundException e)
         {
-            System.out.println("File not found: " + inputFile);
+            Log.err("File not found: " + inputFile);
             System.exit(1);
         }    
         catch (IOException e)
         {
-            System.out.println("IO exception while processing " + inputFile + ": " + e);
+            Log.err("IO exception while processing " + inputFile + ": " + e);
             System.exit(1);
         }  
+        catch (Exception e)
+        {
+            Log.err("A problem occurred:  " + e);
+            System.exit(1);
+        } 
     
     }
 
