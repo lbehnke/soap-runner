@@ -13,8 +13,8 @@ Build binaries:
 $ mvn clean install assembly:single
 
 Display available options:
-$ java -jar soaprunner-all-1.0.jar --help
+$ java -jar soaprunner.jar --help
 
 Example call:
-$ java -jar soaprunner-all-1.0.jar -v -f tcpmon.txt -d out -h lab1 -p 8280 
+$ java -jar soaprunner.jar -v -f tcpmon.txt -d out -h lab1 -p 8280 
 
