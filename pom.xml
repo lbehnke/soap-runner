@@ -6,10 +6,22 @@
 	<version>1.0</version>
 	<name>SOAP runner</name>
 	<description>Takes output of TCPMon and resends it to server.</description>
+	<inceptionYear>2012</inceptionYear>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 	<build>
+		<defaultGoal>install</defaultGoal>
+		<finalName>soaprunner-without-deps</finalName>
+		<resources>
+			<resource>
+				<filtering>true</filtering>
+				<directory>${basedir}/src/main/resources</directory>
+				<includes>
+					<include>**/*.properties</include>
+				</includes>
+			</resource>
+		</resources>
 		<plugins>
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
@@ -21,6 +33,18 @@
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-source-plugin</artifactId>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
 				<version>2.12</version>
 				<configuration>
@@ -29,10 +53,12 @@
 			</plugin>
 			<plugin>
 				<artifactId>maven-assembly-plugin</artifactId>
+				<version>2.3</version>
 				<configuration>
 					<descriptors>
 						<descriptor>${basedir}/src/main/config/assembly.xml</descriptor>
 					</descriptors>
+					<finalName>soaprunner</finalName>
 				</configuration>
 			</plugin>
 			<plugin>
@@ -60,7 +86,7 @@
 					</execution>
 				</executions>
 				<configuration>
-					<finalName>${artifactId}-all-${version}</finalName>
+					<finalName>${artifactId}</finalName>
 				</configuration>
 			</plugin>
 		</plugins>
@@ -83,7 +109,7 @@
 		</dependency>
 		<dependency>
 			<groupId>xerces</groupId>
-			<artifactId>xerces</artifactId>
+			<artifactId>xercesImpl</artifactId>
 			<version>2.4.0</version>
 		</dependency>
 

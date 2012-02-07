@@ -9,12 +9,15 @@
       <directory>target</directory>
       <outputDirectory></outputDirectory>
       <includes>
-        <include>soaprunner-all*.jar</include>
+        <include>soaprunner.jar</include>
+        <include>*-sources.jar</include>
       </includes>
     </fileSet>
     <fileSet>
+      <filtered>true</filtered>
       <includes>
         <include>readme*</include>
+        <include>license*</include>
       </includes>
     </fileSet>
   </fileSets>
