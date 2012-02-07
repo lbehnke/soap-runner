@@ -6,7 +6,7 @@ Author: Lars Behnke
 This tool was created to send a series of SOAP requests to an arbitrary server.
 It simply takes a dump file created by TCPMon and resends its content.
 The original server response (as captured by TCPMon) and the target server response are stored
-in a manner that enable one to perform a file/directory diff.
+in a manner that enable one to perform a file/directory diff or compare.
 
 Build binary:
 $ mvn assembly:assembly
