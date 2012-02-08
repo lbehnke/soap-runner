@@ -198,17 +198,24 @@ public class SoapRunner
         if (outputFolderName != null)
         {
             File directory = new File(new File(outputFolderName), "responses");
-            if (directory.exists())
+            try
             {
-                FileUtils.deleteDirectory(directory);
+                if (directory.exists())
+                {
+                    FileUtils.deleteDirectory(directory);
+                }
+                originalOutput = new File(directory, "original");
+                currentOutput = new File(directory, "current");
+                
+                directory.mkdir();
+                originalOutput.mkdir();
+                currentOutput.mkdir();
             }
-            originalOutput = new File(directory, "original");
-            currentOutput = new File(directory, "current");
-            
-            directory.mkdir();
-            originalOutput.mkdir();
-            currentOutput.mkdir();
-            
+            catch (IOException e)
+            {
+                Log.err("Initializing output folders failed. Check permissions.");
+                throw e;
+            }
         }
     }
 

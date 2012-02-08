@@ -38,16 +38,16 @@ public class SoapRunnerApp
         Log.line("SOAP Runner " + version + " Copyright (C) 2012 Lars Behnke");
         Log.line("This program comes with ABSOLUTELY NO WARRANTY.");
         Log.line("This is free software, and you are welcome to redistribute it.");
-        Log.line("under certain conditions. See license.txt for details.");
+        Log.line("under certain conditions. See license.txt for details.\n");
         
         /* Parsing arguments */
         Options options = buildOptions();
         
         boolean verbose = false;
-        String inputFile = "input.data";
+        String outputFolder = ".";
+        String inputFile = "tcpmon.txt";
         String host = "localhost";
         int port = 8080;
-        String outputFolder = "responses";
         boolean excludeHttpHeader = false;
         
         CommandLineParser parser = new PosixParser();
