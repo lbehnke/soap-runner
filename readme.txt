@@ -9,6 +9,9 @@ It simply takes a dump file created by TCPMon and resends its content.
 The original server response (as captured by TCPMon) and the target server response are stored
 in a manner that enable one to perform a file/directory diff or compare.
 
+Furthermore, you may extract information from the SOAP response documents by applying custom XPath expression.
+The extracted data is bound to variables, which in turn can be used in subsequent SOAP requests.
+
 Build binaries:
 $ mvn clean install assembly:single
 
