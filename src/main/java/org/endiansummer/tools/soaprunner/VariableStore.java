@@ -111,6 +111,7 @@ public class VariableStore
             String key = entry.getKey();
             List<String> list = entry.getValue();
             StringBuffer vars = new StringBuffer();
+            int len = list.size();
             for (String var : list)
             {
                 if (vars.length() > 0)
@@ -118,9 +119,13 @@ public class VariableStore
                     vars.append("\n" + StringUtils.repeat(" ", 35));
                 }
                 vars.append(var);
+                if (--len>0)
+                {
+                    vars.append(" ,\\");
+                }
             }
             sb.append(StringUtils.rightPad(key, 32));
-            sb.append(" : ");
+            sb.append(" = ");
             sb.append(vars.toString());
             sb.append("\n\n");
         }

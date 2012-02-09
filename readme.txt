@@ -22,3 +22,5 @@ Example calls:
 $ java -jar soaprunner.jar -v -f tcpmon.txt -d out -h lab1 -p 8280 
 $ java -jar soaprunner.jar --verbose --file=src/test/resources/tcpmon_short.txt --host=lab1 --port=8280 --dir=target --excludeheader --extractors=src/test/resources/extractor.properties --replacements=src/test/resources/replacement.properties
 
+TCPMon sources:
+http://svn.apache.org/viewvc/webservices/commons/trunk/modules/tcpmon/

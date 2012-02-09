@@ -205,15 +205,24 @@ public class SoapRunner
             throws IOException, FileNotFoundException
     {
         List<String> responseLines = createLinesByString(headerBuffer, contentBuffer);
+        writeResponse(responseLines, requestId, original);
+    }
+
+    private void writeResponse(List<String> responseLines, final String requestId, final boolean original)
+            throws IOException, FileNotFoundException
+    {
         File dir = original ? originalResponseDir : currentResponseDir;
         writeFile(requestId, responseLines, dir, new ContentHandler(){
             public String processContent(String xml)
             {
-                extractor.extractVariables(xml, requestId);
+                if (!original)
+                {
+                    extractor.extractVariables(xml, requestId);
+                }
                 return xml;
             }});
     }
-
+    
     private List<String> createLinesByString(StringBuffer headerBuffer, StringBuffer contentBuffer) throws IOException
     {
         List<String> lines = new ArrayList<String>();
@@ -309,6 +318,7 @@ public class SoapRunner
         }
     }
 
+    @SuppressWarnings("unchecked")
     private void sendRequest(StringBuffer headerBuffer, StringBuffer contentBuffer, final String requestId) throws UnknownHostException, IOException,
             UnsupportedEncodingException
     {
@@ -318,28 +328,31 @@ public class SoapRunner
         }
 
         String content = contentBuffer.toString();
+        
+        /* Apply replacements if applicable */
         content = replacementProcessor.process(content);
         
+        /* Set new content length */
         int contentLength = content.getBytes("UTF-8").length;
         headerBuffer.append("Content-Length: " + contentLength + "\n");
-        String document = headerBuffer.toString() + "\n" + contentBuffer.toString();
+        
         Socket socket = new Socket(host, port);
         try
         {
             OutputStream out = socket.getOutputStream();
             InputStream in = socket.getInputStream();
+            
+            /* Send request */
+            String document = headerBuffer.toString() + "\n" + contentBuffer.toString();
             IOUtils.write(document, out, "UTF-8");
-            @SuppressWarnings("unchecked")
+
+            /* Get response */
             List<String> responseLines = IOUtils.readLines(in, "UTF-8");
             
-            String status = responseLines.size() > 0 ? responseLines.get(0) : null;
-            logStatus(status);
-            writeFile(requestId, responseLines, currentResponseDir, new ContentHandler(){
-                public String processContent(String xml)
-                {
-                    extractor.extractVariables(xml, requestId);
-                    return xml;
-                }});
+            /* Process response */
+            String statusLine = responseLines.size() > 0 ? responseLines.get(0) : null;
+            logStatus(statusLine);
+            writeResponse(responseLines, requestId, false);
         }
         finally 
         {
