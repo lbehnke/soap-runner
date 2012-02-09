@@ -31,6 +31,6 @@ public class Log
     
     public static void err(String ln)
     {
-        System.err.println(ln);
+        System.err.println("ERROR: " + ln);
     }
 }

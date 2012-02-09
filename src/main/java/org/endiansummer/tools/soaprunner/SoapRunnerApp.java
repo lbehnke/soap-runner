@@ -47,6 +47,8 @@ public class SoapRunnerApp
         String outputFolder = ".";
         String inputFile = "tcpmon.txt";
         String host = "localhost";
+        String replacementsFile = null;
+        String extractorFile = null;
         int port = 8080;
         boolean excludeHttpHeader = false;
         
@@ -74,6 +76,12 @@ public class SoapRunnerApp
             if (cmd.hasOption("d")) {
                 outputFolder = cmd.getOptionValue("d");
             }
+            if (cmd.hasOption("r")) {
+                replacementsFile = cmd.getOptionValue("r");
+            }
+            if (cmd.hasOption("e")) {
+                extractorFile = cmd.getOptionValue("e");
+            }
             if (cmd.hasOption("x")) {
                 excludeHttpHeader = true;
             }
@@ -86,7 +94,7 @@ public class SoapRunnerApp
             System.exit(1);
         }
         
-        SoapRunner runner = new SoapRunner(host, port, outputFolder, excludeHttpHeader, verbose);
+        SoapRunner runner = new SoapRunner(host, port, outputFolder, replacementsFile, extractorFile, excludeHttpHeader, verbose);
         try
         {
             runner.run(new File(inputFile));
@@ -132,6 +140,8 @@ public class SoapRunnerApp
         options.addOption("h", "host",    true, "remote host");        
         options.addOption("p", "port",    true, "remote port");        
         options.addOption("d", "dir",     true, "response output folder");
+        options.addOption("r", "replacements",  true, "name of replacements file");
+        options.addOption("e", "extractors",  true, "name of xpath extractor file");
         options.addOption("x", "excludeheader", false, "exclude HTTP header");
         options.addOption("?", "help",    false, "print help");
         return options;

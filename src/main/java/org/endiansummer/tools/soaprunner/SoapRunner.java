@@ -49,16 +49,24 @@ public class SoapRunner
     private File currentOutput;
     private File originalOutput;
     private DocumentFormatter formatter;
-    
-    public SoapRunner(String host, int port, String outputFolder, boolean excludeHttpHeader, boolean verbose)
+
+    private VariableExtractor extractor;
+    private VariableResolver variableResolver;
+    private ReplacementProcessor replacementProcessor;
+
+    public SoapRunner(String host, int port, String outputFolder, String replacementsFileName, String extractorsFileName, boolean excludeHttpHeader, boolean verbose)
     {
         this.verbose = verbose;
         this.host = host;
         this.port = port;
         this.outputFolderName = outputFolder;
+        
         this.formatter = new SoapDocumentFormatter(excludeHttpHeader, verbose);
+        this.extractor = new VariableExtractor(extractorsFileName, verbose);
+        this.variableResolver = new VariableResolver(verbose);
+        this.replacementProcessor = new ReplacementProcessor(variableResolver, replacementsFileName, verbose);
     }
-    
+
     public void run(File inputFile) throws FileNotFoundException, IOException
     {
         if (verbose)
@@ -134,7 +142,7 @@ public class SoapRunner
                 }
                 else if (inResponse)
                 {
-                    List<String> responseLines = createLines(headerBuffer, contentBuffer);
+                    List<String> responseLines = createLinesByString(headerBuffer, contentBuffer);
                     writeResponseFile(requestId, responseLines, originalOutput);
                     inResponse = false;
                 }
@@ -159,7 +167,7 @@ public class SoapRunner
         }
     }
 
-    private List<String> createLines(StringBuffer headerBuffer, StringBuffer contentBuffer) throws IOException
+    private List<String> createLinesByString(StringBuffer headerBuffer, StringBuffer contentBuffer) throws IOException
     {
         List<String> lines = new ArrayList<String>();
         BufferedReader sr = new BufferedReader(new StringReader(headerBuffer + "\n" + contentBuffer));
@@ -177,7 +185,7 @@ public class SoapRunner
         }
         return lines;
     }
-
+    
     private String createRequestIdFromLine(String line, int count)
     {
         
@@ -248,7 +256,10 @@ public class SoapRunner
             Log.line("Sending server request " + requestId);
         }
 
-        int contentLength = contentBuffer.toString().getBytes("UTF-8").length;
+        String content = contentBuffer.toString();
+        content = replacementProcessor.process(content);
+        
+        int contentLength = content.getBytes("UTF-8").length;
         headerBuffer.append("Content-Length: " + contentLength + "\n");
         String document = headerBuffer.toString() + "\n" + contentBuffer.toString();
         Socket socket = new Socket(host, port);
@@ -269,7 +280,7 @@ public class SoapRunner
             socket.close();
         }
    }
-
+  
     private void logStatus(String status)
     {
         if (status != null)
@@ -293,7 +304,7 @@ public class SoapRunner
         }
     }
 
-    private void writeResponseFile(String requestId, List<String> responseLines, File folder) throws FileNotFoundException
+    private void writeResponseFile(final String requestId, List<String> responseLines, File folder) throws FileNotFoundException
     {
         if (folder != null)
         {
@@ -305,7 +316,12 @@ public class SoapRunner
             PrintWriter writer = new PrintWriter(docFile);
             try
             {
-                formatter.format(responseLines, writer);
+                formatter.format(responseLines, writer, new ContentHandler(){
+                    public String processContent(String xml)
+                    {
+                        extractor.extractVariables(xml, requestId);
+                        return xml;
+                    }});
             }
             finally 
             {
@@ -313,5 +329,6 @@ public class SoapRunner
             } 
         }
     }
+    
 
 }

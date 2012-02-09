@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<soapenv:Body>
+		<getSystemVersionInfosResponse
+			xmlns="http://systeminformation.administration.services.core.server.endiansummer.org">
+			<getSystemVersionInfosReturn>
+				<item>
+					<moduleBuildNumber>${env.BUILD_NUMBER}</moduleBuildNumber>
+					<moduleName>Module 1</moduleName>
+					<moduleTimestamp>${env.BUILD_ID}</moduleTimestamp>
+					<moduleVersion>1.4-SNAPSHOT</moduleVersion>
+				</item>
+				<item>
+					<moduleBuildNumber>1017</moduleBuildNumber>
+					<moduleName>Module 2</moduleName>
+					<moduleTimestamp>2012-01-26_15-28-56</moduleTimestamp>
+					<moduleVersion>1.2-SNAPSHOT</moduleVersion>
+				</item>
+			</getSystemVersionInfosReturn>
+		</getSystemVersionInfosResponse>
+	</soapenv:Body>
+</soapenv:Envelope>

@@ -1,0 +1,67 @@
+
+==============
+Listen Port: 18280
+Target Host: 127.0.0.1
+Target Port: 8280
+==== Request ====
+POST /engine-ws/services/SystemInformationService HTTP/1.0
+User-Agent: Mozilla/4.0 (compatible; MSIE 6.0; MS Web Services Client Protocol 2.0.50727.4963)
+VsDebuggerCausalityData: uIDPoy6Tf5Y64YBDmBjV4gIHZG4AAAAAG3/dpaTDmEKqtEIQ+pmEnOBNwObbY4xFh8FkYQblStoACQAA
+Content-Type: text/xml; charset=utf-8
+SOAPAction: "getSystemVersionInfos"
+Host: 127.0.0.1:18280
+Content-Length: 357
+
+<?xml version="1.0" encoding="utf-8"?>
+   <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+      <soap:Body>
+         <getSystemVersionInfos xmlns="http://systeminformation.administration.services.core.test.de" />
+      </soap:Body>
+   </soap:Envelope>==== Response ====
+HTTP/1.1 200 OK
+: Apache-Coyote/1.1
+X-Powered-By: Servlet 2.4; JBoss-4.2.3.GA (build: SVNTag=JBoss_4_2_3_GA date=200807181417)/JBossWeb-2.0
+Content-Type: text/xml;charset=utf-8
+Date: Mon, 06 Feb 2012 11:03:26 GMT
+Connection: close
+
+<?xml version="1.0" encoding="utf-8"?>
+   <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+      <soapenv:Body>
+         <getSystemVersionInfosResponse xmlns="http://systeminformation.administration.services.core.test.de">
+            <getSystemVersionInfosReturn>
+               <item>
+                  <moduleBuildNumber>${env.BUILD_NUMBER}</moduleBuildNumber>
+                  <moduleName>Test engine </moduleName>
+                  <moduleTimestamp>${env.BUILD_ID}</moduleTimestamp>
+                  <moduleVersion>1.4-SNAPSHOT</moduleVersion>
+               </item>
+               <item>
+                  <moduleBuildNumber>1017</moduleBuildNumber>
+                  <moduleName>Cache </moduleName>
+                  <moduleTimestamp>2012-01-26_15-28-56</moduleTimestamp>
+                  <moduleVersion>1.2-SNAPSHOT</moduleVersion>
+               </item>
+               <item>
+                  <moduleBuildNumber>1015</moduleBuildNumber>
+                  <moduleName>Method </moduleName>
+                  <moduleTimestamp>2012-01-26_15-28-43</moduleTimestamp>
+                  <moduleVersion>1.0-SNAPSHOT</moduleVersion>
+               </item>
+               <item>
+                  <moduleBuildNumber>1031</moduleBuildNumber>
+                  <moduleName>Project </moduleName>
+                  <moduleTimestamp>2012-01-26_15-32-45</moduleTimestamp>
+                  <moduleVersion>2.0-SNAPSHOT</moduleVersion>
+               </item>
+               <item>
+                  <moduleBuildNumber>476</moduleBuildNumber>
+                  <moduleName>UserManagement </moduleName>
+                  <moduleTimestamp>2012-01-13_13-55-22</moduleTimestamp>
+                  <moduleVersion>1.2.0.TR-SNAPSHOT</moduleVersion>
+               </item>
+            </getSystemVersionInfosReturn>
+         </getSystemVersionInfosResponse>
+      </soapenv:Body>
+   </soapenv:Envelope>
+==============

@@ -50,7 +50,7 @@ public class SoapDocumentFormatter implements DocumentFormatter
     }
 
     @Override
-    public void format(List<String> lines, PrintWriter writer)
+    public void format(List<String> lines, PrintWriter writer, ContentHandler handler)
     {
 
         if (lines == null || lines.size() == 0)
@@ -60,7 +60,7 @@ public class SoapDocumentFormatter implements DocumentFormatter
         List<String> localLines = new ArrayList<String>(lines);
         processStatusLine(writer, localLines);
         processHeaderLines(writer, localLines);
-        processContentLines(writer, localLines);
+        processContentLines(writer, localLines, handler);
     }
 
     private void processStatusLine(PrintWriter writer, List<String> localLines)
@@ -102,7 +102,7 @@ public class SoapDocumentFormatter implements DocumentFormatter
         }
     }
 
-    private void processContentLines(PrintWriter writer, List<String> localLines)
+    private void processContentLines(PrintWriter writer, List<String> localLines, ContentHandler contentHandler)
     {
         StringBuffer unformattedContent = new StringBuffer();
         for (String string : localLines)
@@ -111,6 +111,11 @@ public class SoapDocumentFormatter implements DocumentFormatter
             unformattedContent.append("\n");
         }
         String formattedXml = formatXml(unformattedContent.toString());
+        
+        if (contentHandler != null)
+        {
+            formattedXml = contentHandler.processContent(formattedXml);
+        }
         writer.println(formattedXml.trim());
     }
 

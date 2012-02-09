@@ -22,5 +22,5 @@ import java.util.List;
 
 public interface DocumentFormatter
 {
-    void format(List<String> lines, PrintWriter writer);
+    void format(List<String> lines, PrintWriter writer, ContentHandler handler);
 }
