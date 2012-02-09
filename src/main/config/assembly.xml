@@ -20,5 +20,15 @@
         <include>license*</include>
       </includes>
     </fileSet>
+    <fileSet>
+      <filtered>false</filtered>
+      <directory>src/main/config</directory>
+      <outputDirectory></outputDirectory>
+      <includes>
+        <include>replacement.properties</include>
+        <include>extractor.properties</include>
+      </includes>
+    </fileSet>
+    
   </fileSets>
 </assembly>

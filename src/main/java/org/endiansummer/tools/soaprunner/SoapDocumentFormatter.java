@@ -127,7 +127,7 @@ public class SoapDocumentFormatter implements DocumentFormatter
             if (document != null)
             {
                 OutputFormat format = new OutputFormat(document);
-                format.setLineWidth(65);
+                format.setLineWidth(80);
                 format.setIndenting(true);
                 format.setIndent(2);
                 Writer out = new StringWriter();
