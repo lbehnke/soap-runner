@@ -44,6 +44,7 @@ public class SoapRunnerApp
         Options options = buildOptions();
         
         boolean verbose = false;
+        boolean dumpVariables = false;
         String outputFolder = ".";
         String inputFile = "tcpmon.txt";
         String host = "localhost";
@@ -63,6 +64,9 @@ public class SoapRunnerApp
             }
             if (cmd.hasOption("v")) {
                 verbose = true;
+            }
+            if (cmd.hasOption("V")) {
+                dumpVariables = true;
             }
             if (cmd.hasOption("f")) {
                 inputFile = cmd.getOptionValue("f");
@@ -94,7 +98,8 @@ public class SoapRunnerApp
             System.exit(1);
         }
         
-        SoapRunner runner = new SoapRunner(host, port, outputFolder, replacementsFile, extractorFile, excludeHttpHeader, verbose);
+        SoapRunner runner = new SoapRunner(host, port, outputFolder, replacementsFile, extractorFile, 
+                excludeHttpHeader, dumpVariables, verbose);
         try
         {
             runner.run(new File(inputFile));
@@ -137,6 +142,7 @@ public class SoapRunnerApp
         Options options = new Options();
         options.addOption("f", "file",    true, "input file (TCPMon output format)");
         options.addOption("v", "verbose", false, "verbose log output");
+        options.addOption("V", "dump", false, "dump variables");
         options.addOption("h", "host",    true, "remote host");        
         options.addOption("p", "port",    true, "remote port");        
         options.addOption("d", "dir",     true, "response output folder");

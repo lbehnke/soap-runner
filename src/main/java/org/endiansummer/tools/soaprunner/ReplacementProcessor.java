@@ -54,16 +54,19 @@ public class ReplacementProcessor
                 props.load(new FileReader(file));
                 
                 String replacementStr = props.getProperty("replacements");
-                String[] replacementArr = replacementStr.split(",");
-                for (String repl : replacementArr)
+                if (replacementStr != null)
                 {
-                    repl = repl.trim();
-                    String regex = props.getProperty(repl + ".regex");
-                    String value = props.getProperty(repl + ".replacement");
-                    if (regex != null && value != null)
+                    String[] replacementArr = replacementStr.split(",");
+                    for (String repl : replacementArr)
                     {
-                        replacements.add(new Replacement(regex, value));
-                    }
+                        repl = repl.trim();
+                        String regex = props.getProperty(repl + ".regex");
+                        String value = props.getProperty(repl + ".replacement");
+                        if (regex != null && value != null)
+                        {
+                            replacements.add(new Replacement(regex, value));
+                        }
+                    }                    
                 }
             }
             else

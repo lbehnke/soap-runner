@@ -17,10 +17,15 @@
  */
 package org.endiansummer.tools.soaprunner;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.StringUtils;
 
 public class VariableStore
 {
@@ -44,7 +49,7 @@ public class VariableStore
     public String getVariable(String key, int index)
     {
         List<String> list = variables.get(key);
-        if (list == null || list.size() == 0)
+        if (list == null || list.size() == 0 || index >= list.size())
         {
             return null;
         }
@@ -56,7 +61,16 @@ public class VariableStore
     
     public String getVariable(String key)
     {
-        return getVariable(key, getVariableCount(key) - 1);
+        
+        String idxStr = StringUtils.substringBetween(key, "[", "]");
+        if (idxStr != null)
+        {
+            key = StringUtils.substringBefore(key, "[").trim();
+            idxStr = idxStr.trim();
+        }
+        
+        int index = idxStr != null ? Integer.parseInt(idxStr) : getVariableCount(key) - 1;
+        return getVariable(key, index);
     }
     
     public int getVariableCount(String key)
@@ -87,6 +101,30 @@ public class VariableStore
     public void clear()
     {
         variables.clear();
+    }
+    
+    public void dump(File file) throws IOException
+    {
+        StringBuffer sb = new StringBuffer();
+        for (Map.Entry<String, List<String>> entry : variables.entrySet())
+        {
+            String key = entry.getKey();
+            List<String> list = entry.getValue();
+            StringBuffer vars = new StringBuffer();
+            for (String var : list)
+            {
+                if (vars.length() > 0)
+                {
+                    vars.append("\n" + StringUtils.repeat(" ", 35));
+                }
+                vars.append(var);
+            }
+            sb.append(StringUtils.rightPad(key, 32));
+            sb.append(" : ");
+            sb.append(vars.toString());
+            sb.append("\n\n");
+        }
+        FileUtils.writeStringToFile(file, sb.toString(), "UTF-8");
     }
     
 }

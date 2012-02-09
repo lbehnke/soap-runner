@@ -26,7 +26,7 @@ import org.apache.commons.lang.math.RandomUtils;
 
 public class VariableResolver
 {
-    private Pattern pattern = Pattern.compile("\\$\\{([a-zA-Z0-9\\-_\\. ]+)\\}");
+    private Pattern pattern = Pattern.compile("\\$\\{([a-zA-Z0-9\\-_\\. \\[\\]]+)\\}");
     private boolean verbose = false;
 
     

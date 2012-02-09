@@ -38,28 +38,38 @@ import org.apache.commons.io.IOUtils;
 
 public class SoapRunner
 {
+    private static final String ACTUAL_DIR_NAME = "actual";
+    private static final String ORIGINAL_DIR_NAME = "original";
     private static final String RESPONSE_MARKER = "==== Response ====";
     private static final String REQUEST_MARKER = "==== Request ====";
     private static final String END_MARKER = "==============";
     
-    private boolean verbose = false;
+    private boolean verbose;
+    private boolean dumpVariables;
     private String host;
     private int port;
     private String outputFolderName;
-    private File currentOutput;
-    private File originalOutput;
+    private File currentResponseDir;
+    private File originalResponseDir;
+    private File currentRequestDir;
+    private File originalRequestDir;
+    private File varDumpFile;
     private DocumentFormatter formatter;
+    private boolean excludeHttpHeader;
 
     private VariableExtractor extractor;
     private VariableResolver variableResolver;
     private ReplacementProcessor replacementProcessor;
 
-    public SoapRunner(String host, int port, String outputFolder, String replacementsFileName, String extractorsFileName, boolean excludeHttpHeader, boolean verbose)
+    public SoapRunner(String host, int port, String outputFolder, String replacementsFileName, String extractorsFileName, 
+            boolean excludeHttpHeader, boolean dumpVariables, boolean verbose)
     {
         this.verbose = verbose;
+        this.dumpVariables = dumpVariables;
         this.host = host;
         this.port = port;
         this.outputFolderName = outputFolder;
+        this.excludeHttpHeader = excludeHttpHeader;
         
         this.formatter = new SoapDocumentFormatter(excludeHttpHeader, verbose);
         this.extractor = new VariableExtractor(extractorsFileName, verbose);
@@ -87,11 +97,33 @@ public class SoapRunner
 
     public void run(Reader reader) throws IOException
     {
+        if (!verbose)
+        {
+            Log.append("Please wait.");
+        }
+        
+        /* Recreate output folders */
         initFolders();
+        
+        /* Start working */
         doRun(reader);
+        
+        if (dumpVariables)
+        {
+            if (verbose)
+            {
+                Log.line("Dumping variables to " + varDumpFile);
+            }
+            VariableStore.getInstance().dump(varDumpFile);
+        }
+        
+        if (!verbose)
+        {
+            Log.line("\nDone.");
+        }
     }
 
-    private void doRun(Reader reader) throws IOException, UnknownHostException, UnsupportedEncodingException
+    protected void doRun(Reader reader) throws IOException, UnknownHostException, UnsupportedEncodingException
     {
         BufferedReader bis = new BufferedReader(reader);
         String line;
@@ -102,12 +134,6 @@ public class SoapRunner
         boolean inResponse = false;
         int count = 0;
         String requestId = null;
-   
-        if (!verbose)
-        {
-            Log.append("Please wait");
-        }
-        
         while ((line = bis.readLine()) != null)
         {
             if (line.endsWith(REQUEST_MARKER)){
@@ -126,6 +152,7 @@ public class SoapRunner
                 if (inRequest)
                 {
                     sendRequest(headerBuffer, contentBuffer, requestId);
+                    writeRequests(headerBuffer, contentBuffer, requestId);
                 }
                 headerBuffer = new StringBuffer();
                 contentBuffer = new StringBuffer();
@@ -138,12 +165,12 @@ public class SoapRunner
                 if (inRequest)
                 {
                     sendRequest(headerBuffer, contentBuffer, requestId);
+                    writeRequests(headerBuffer, contentBuffer, requestId);
                     inRequest = false;
                 }
                 else if (inResponse)
                 {
-                    List<String> responseLines = createLinesByString(headerBuffer, contentBuffer);
-                    writeResponseFile(requestId, responseLines, originalOutput);
+                    writeResponse(headerBuffer, contentBuffer, requestId, true);
                     inResponse = false;
                 }
             }
@@ -160,11 +187,31 @@ public class SoapRunner
                 appendLine(line, headerBuffer, contentBuffer, inHeader);
             }
         }
-        
-        if (!verbose)
-        {
-            Log.line("\nDone");
-        }
+
+    }
+
+    private void writeRequests(StringBuffer headerBuffer, StringBuffer contentBuffer, final String requestId) throws IOException, FileNotFoundException
+    {
+        List<String> requestLines = createLinesByString(headerBuffer, contentBuffer);
+        writeFile(requestId, requestLines, originalRequestDir, null);
+        writeFile(requestId, requestLines, currentRequestDir, new ContentHandler(){
+            public String processContent(String xml)
+            {
+                return replacementProcessor.process(xml);
+            }});        
+    }
+
+    private void writeResponse(StringBuffer headerBuffer, StringBuffer contentBuffer, final String requestId, boolean original)
+            throws IOException, FileNotFoundException
+    {
+        List<String> responseLines = createLinesByString(headerBuffer, contentBuffer);
+        File dir = original ? originalResponseDir : currentResponseDir;
+        writeFile(requestId, responseLines, dir, new ContentHandler(){
+            public String processContent(String xml)
+            {
+                extractor.extractVariables(xml, requestId);
+                return xml;
+            }});
     }
 
     private List<String> createLinesByString(StringBuffer headerBuffer, StringBuffer contentBuffer) throws IOException
@@ -205,23 +252,37 @@ public class SoapRunner
     {
         if (outputFolderName != null)
         {
-            File directory = new File(new File(outputFolderName), "responses");
+            File responses = new File(new File(outputFolderName), "responses");
+            File requests = new File(new File(outputFolderName), "requests");
             try
             {
-                if (directory.exists())
+                if (responses.exists())
                 {
-                    FileUtils.deleteDirectory(directory);
+                    FileUtils.deleteDirectory(responses);
                 }
-                originalOutput = new File(directory, "original");
-                currentOutput = new File(directory, "current");
+                originalResponseDir = new File(responses, ORIGINAL_DIR_NAME);
+                currentResponseDir = new File(responses, ACTUAL_DIR_NAME);
                 
-                directory.mkdir();
-                originalOutput.mkdir();
-                currentOutput.mkdir();
+                responses.mkdir();
+                originalResponseDir.mkdir();
+                currentResponseDir.mkdir();
+                
+                if (requests.exists())
+                {
+                    FileUtils.deleteDirectory(requests);
+                }
+                originalRequestDir = new File(requests, ORIGINAL_DIR_NAME);
+                currentRequestDir = new File(requests, ACTUAL_DIR_NAME);
+                
+                requests.mkdir();
+                originalRequestDir.mkdir();
+                currentRequestDir.mkdir();
+                
+                varDumpFile = new File(outputFolderName, "variables.out");
             }
             catch (IOException e)
             {
-                Log.err("Initializing output folders failed. Check permissions.");
+                Log.err("Initializing folders failed. Check permissions.");
                 throw e;
             }
         }
@@ -248,7 +309,7 @@ public class SoapRunner
         }
     }
 
-    private void sendRequest(StringBuffer headerBuffer, StringBuffer contentBuffer, String requestId) throws UnknownHostException, IOException,
+    private void sendRequest(StringBuffer headerBuffer, StringBuffer contentBuffer, final String requestId) throws UnknownHostException, IOException,
             UnsupportedEncodingException
     {
         if (verbose)
@@ -273,7 +334,12 @@ public class SoapRunner
             
             String status = responseLines.size() > 0 ? responseLines.get(0) : null;
             logStatus(status);
-            writeResponseFile(requestId, responseLines, currentOutput);
+            writeFile(requestId, responseLines, currentResponseDir, new ContentHandler(){
+                public String processContent(String xml)
+                {
+                    extractor.extractVariables(xml, requestId);
+                    return xml;
+                }});
         }
         finally 
         {
@@ -303,25 +369,21 @@ public class SoapRunner
             }
         }
     }
-
-    private void writeResponseFile(final String requestId, List<String> responseLines, File folder) throws FileNotFoundException
+    
+    private void writeFile(final String requestId, List<String> requestLines, File folder, ContentHandler handler) throws FileNotFoundException
     {
         if (folder != null)
         {
             if (verbose)
             {
-                Log.line("Writing response " + requestId + " to " + folder);
+                Log.line("Writing request " + requestId + " to " + folder);
             }
-            File docFile = new File(folder, requestId + ".txt");
+            String extension = excludeHttpHeader ? "xml" : "txt";
+            File docFile = new File(folder, requestId + "." + extension);
             PrintWriter writer = new PrintWriter(docFile);
             try
             {
-                formatter.format(responseLines, writer, new ContentHandler(){
-                    public String processContent(String xml)
-                    {
-                        extractor.extractVariables(xml, requestId);
-                        return xml;
-                    }});
+                formatter.format(requestLines, writer, handler);
             }
             finally 
             {
@@ -329,6 +391,5 @@ public class SoapRunner
             } 
         }
     }
-    
 
 }
